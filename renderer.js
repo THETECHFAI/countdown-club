@@ -261,9 +261,21 @@ function renderEvents() {
   // Attach upvote listeners
   for (var i = 0; i < filtered.length; i++) {
     var eventId = filtered[i].id;
-    var btn = document.querySelector('[data-upvote-id="' + eventId + '"]');
-    if (btn) {
-      btn.onclick = createUpvoteHandler(eventId);
+    var upvoteBtn = document.querySelector('[data-upvote-id="' + eventId + '"]');
+    if (upvoteBtn) {
+      upvoteBtn.onclick = createUpvoteHandler(eventId);
+    }
+
+    // Attach share button listener
+    var shareBtn = document.querySelector('[data-share-id="' + eventId + '"]');
+    if (shareBtn) {
+      shareBtn.onclick = createShareHandler(eventId);
+    }
+
+    // Attach tweet button listener
+    var tweetBtn = document.querySelector('[data-tweet-id="' + eventId + '"]');
+    if (tweetBtn) {
+      tweetBtn.onclick = createTweetHandler(eventId);
     }
   }
 }
@@ -304,6 +316,10 @@ function renderEventCard(event) {
     '<div class="progress-bar" style="width: ' + progressPercent + '%"></div>' +
     '</div>' +
     '<p class="event-description">' + event.description + '</p>' +
+    '<div class="share-buttons">' +
+    '<button class="share-btn" data-share-id="' + event.id + '">📸 Share</button>' +
+    '<button class="tweet-btn" data-tweet-id="' + event.id + '">🐦 Tweet</button>' +
+    '</div>' +
     '</div>' +
     '</div>';
 }
@@ -548,4 +564,140 @@ function startUpdateLoop() {
   updateInterval = setInterval(function() {
     updateCountdowns();
   }, 1000);
+}
+
+// Share functionality
+function createShareHandler(eventId) {
+  return function() {
+    generateShareImage(eventId);
+  };
+}
+
+function createTweetHandler(eventId) {
+  return function() {
+    tweetEvent(eventId);
+  };
+}
+
+function generateShareImage(eventId) {
+  var event = null;
+  for (var i = 0; i < events.length; i++) {
+    if (events[i].id === eventId) {
+      event = events[i];
+      break;
+    }
+  }
+  if (!event) return;
+
+  // Create canvas
+  var canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = 675;
+  var ctx = canvas.getContext('2d');
+
+  // Get countdown data
+  var timeData = calculateTimeRemaining(event.timestamp, Date.now());
+  var emoji = categoryEmojis[event.category] || "📅";
+
+  // Get category color
+  var categoryColors = {
+    "sports": "#FF0000",
+    "tech": "#0066FF",
+    "fashion": "#FF006E",
+    "entertainment": "#8B00FF",
+    "space": "#00D9FF",
+    "gaming": "#00FF85",
+    "culture": "#FFB800"
+  };
+  var categoryColor = categoryColors[event.category] || "#000000";
+
+  // Draw image
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, 1200, 675);
+
+  // Category color bar
+  ctx.fillStyle = categoryColor;
+  ctx.fillRect(0, 0, 1200, 20);
+
+  // Emoji
+  ctx.font = '140px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(emoji, 600, 200);
+
+  // Event name
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 72px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(event.name, 600, 310);
+
+  // Countdown
+  var units = [];
+  if (timeData.years > 0) units.push({ value: timeData.years, label: 'YR' });
+  if (timeData.months > 0) units.push({ value: timeData.months, label: 'MO' });
+  if (timeData.days > 0) units.push({ value: timeData.days, label: 'D' });
+  if (timeData.hours > 0 && units.length < 4) units.push({ value: timeData.hours, label: 'H' });
+  if (timeData.minutes > 0 && units.length < 4) units.push({ value: timeData.minutes, label: 'M' });
+
+  var startX = 250;
+  ctx.textAlign = 'center';
+
+  for (var i = 0; i < Math.min(units.length, 4); i++) {
+    var x = startX + (i * 230);
+
+    // Number
+    ctx.font = 'bold 90px serif';
+    ctx.fillStyle = '#000000';
+    ctx.fillText(units[i].value, x, 460);
+
+    // Label
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#757575';
+    ctx.fillText(units[i].label, x, 500);
+  }
+
+  // Bottom branding
+  ctx.font = 'bold 32px sans-serif';
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'center';
+  ctx.fillText('COUNTDOWN CLUB', 600, 590);
+
+  ctx.font = '22px sans-serif';
+  ctx.fillStyle = '#757575';
+  ctx.fillText('countdown-club.vercel.app', 600, 625);
+
+  // Border
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(0, 0, 1200, 675);
+
+  // Download
+  var link = document.createElement('a');
+  link.download = 'countdown-club-' + event.id + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function tweetEvent(eventId) {
+  var event = null;
+  for (var i = 0; i < events.length; i++) {
+    if (events[i].id === eventId) {
+      event = events[i];
+      break;
+    }
+  }
+  if (!event) return;
+
+  var timeData = calculateTimeRemaining(event.timestamp, Date.now());
+  var emoji = categoryEmojis[event.category] || "📅";
+
+  // Build countdown text
+  var countdownText = "";
+  if (timeData.years > 0) countdownText += timeData.years + " years ";
+  if (timeData.months > 0) countdownText += timeData.months + " months ";
+  if (timeData.days > 0) countdownText += timeData.days + " days ";
+
+  var tweetText = event.name + " in " + countdownText.trim() + "! " + emoji + "\n\nTrack it at https://countdown-club.vercel.app/";
+
+  var tweetUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetText);
+  window.open(tweetUrl, '_blank');
 }
