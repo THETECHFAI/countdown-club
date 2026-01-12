@@ -35,17 +35,24 @@ body {
   top: 20px;
   left: 20px;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--gray-400);
+  font-weight: 600;
+  color: var(--black);
   text-decoration: none;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   z-index: 1000;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  padding: 8px 12px;
+  border: 2px solid var(--black);
+  background: var(--white);
+  cursor: pointer;
 }
 
 .creator-credit:hover {
-  color: var(--black);
+  background: var(--black);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--black);
 }
 
 .container {
