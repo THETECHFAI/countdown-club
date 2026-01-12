@@ -1,0 +1,441 @@
+:root {
+  --tech: #0066FF;
+  --fashion: #FF006E;
+  --sports: #FF0000;
+  --entertainment: #8B00FF;
+  --space: #00D9FF;
+  --gaming: #00FF85;
+  --culture: #FFB800;
+  --black: #000000;
+  --white: #FFFFFF;
+  --gray-100: #F5F5F5;
+  --gray-200: #E0E0E0;
+  --gray-300: #BDBDBD;
+  --gray-400: #757575;
+  --gray-500: #424242;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--white);
+  color: var(--black);
+  min-height: 100vh;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.creator-credit {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-400);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  z-index: 1000;
+  transition: color 0.2s ease;
+}
+
+.creator-credit:hover {
+  color: var(--black);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 60px 40px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 60px;
+  padding-bottom: 40px;
+  border-bottom: 4px solid var(--black);
+}
+
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 8rem;
+  font-weight: 900;
+  color: var(--black);
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--gray-400);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 50px;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 12px 24px;
+  background: var(--white);
+  border: 2px solid var(--black);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--black);
+}
+
+.filter-tab:hover {
+  background: var(--gray-100);
+}
+
+.filter-tab.active {
+  background: var(--black);
+  color: var(--white);
+}
+
+.sort-controls {
+  display: flex;
+  gap: 8px;
+  border: 2px solid var(--black);
+}
+
+.sort-btn {
+  padding: 12px 24px;
+  background: var(--white);
+  border: none;
+  border-right: 2px solid var(--black);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-btn:last-child {
+  border-right: none;
+}
+
+.sort-btn:hover {
+  background: var(--gray-100);
+}
+
+.sort-btn.active {
+  background: var(--black);
+  color: var(--white);
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 30px;
+}
+
+.event-card {
+  background: var(--white);
+  border: 3px solid var(--black);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 1;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 8px 8px 0 var(--black);
+}
+
+.event-card.completed {
+  opacity: 0.4;
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--black);
+}
+
+.event-card[data-category="tech"]::before { background: var(--tech); }
+.event-card[data-category="fashion"]::before { background: var(--fashion); }
+.event-card[data-category="sports"]::before { background: var(--sports); }
+.event-card[data-category="entertainment"]::before { background: var(--entertainment); }
+.event-card[data-category="space"]::before { background: var(--space); }
+.event-card[data-category="gaming"]::before { background: var(--gaming); }
+.event-card[data-category="culture"]::before { background: var(--culture); }
+
+.event-header {
+  padding: 24px 24px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.event-category {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 2px solid var(--black);
+}
+
+.event-card[data-category="tech"] .event-category {
+  background: var(--tech);
+  color: var(--white);
+  border-color: var(--tech);
+}
+.event-card[data-category="fashion"] .event-category {
+  background: var(--fashion);
+  color: var(--white);
+  border-color: var(--fashion);
+}
+.event-card[data-category="sports"] .event-category {
+  background: var(--sports);
+  color: var(--white);
+  border-color: var(--sports);
+}
+.event-card[data-category="entertainment"] .event-category {
+  background: var(--entertainment);
+  color: var(--white);
+  border-color: var(--entertainment);
+}
+.event-card[data-category="space"] .event-category {
+  background: var(--space);
+  color: var(--black);
+  border-color: var(--space);
+}
+.event-card[data-category="gaming"] .event-category {
+  background: var(--gaming);
+  color: var(--black);
+  border-color: var(--gaming);
+}
+.event-card[data-category="culture"] .event-category {
+  background: var(--culture);
+  color: var(--black);
+  border-color: var(--culture);
+}
+
+.upvote-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--white);
+  border: 2px solid var(--black);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upvote-btn:hover {
+  background: var(--black);
+  color: var(--white);
+}
+
+.upvote-btn.upvoted {
+  background: var(--black);
+  color: var(--white);
+}
+
+.event-content {
+  padding: 0 24px 24px;
+}
+
+.event-icon {
+  font-size: 3.5rem;
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+.event-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  color: var(--black);
+}
+
+.event-date {
+  font-size: 0.85rem;
+  color: var(--gray-400);
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.countdown-display {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+}
+
+.countdown-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+}
+
+.event-description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--gray-500);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: var(--gray-200);
+  margin: 20px 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--black);
+  transition: width 1s linear;
+}
+
+/* Flip animation for countdown numbers */
+.flip-number {
+  animation: flipIn 0.6s ease-in-out;
+}
+
+@keyframes flipIn {
+  0% {
+    transform: rotateX(0deg);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+/* Urgency color coding */
+.event-card.urgency-critical::before {
+  background: #FF0000 !important;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.event-card.urgency-high::before {
+  background: #FF6600 !important;
+}
+
+.event-card.urgency-medium::before {
+  background: #FFB800 !important;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100px 20px;
+  color: var(--gray-400);
+}
+
+.empty-state.hidden {
+  display: none;
+}
+
+.empty-state p {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+#confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 40px 20px;
+  }
+
+  header h1 {
+    font-size: 4rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-tabs {
+    justify-content: center;
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-name {
+    font-size: 1.5rem;
+  }
+}
