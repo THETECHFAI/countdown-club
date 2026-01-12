@@ -87,9 +87,8 @@ if (document.readyState === "loading") {
 function init() {
   try {
     console.log("Initializing app...");
-    loadData();
+    loadData(); // This will call renderEvents() after loading Firebase votes
     setupEventListeners();
-    renderEvents();
     startUpdateLoop();
     console.log("App initialized successfully");
   } catch (error) {
@@ -99,16 +98,6 @@ function init() {
 }
 
 function loadData() {
-  try {
-    var savedUpvotes = localStorage.getItem("upvotes");
-    if (savedUpvotes) {
-      upvotes = JSON.parse(savedUpvotes);
-    }
-  } catch (e) {
-    console.error("Error loading upvotes:", e);
-    upvotes = {};
-  }
-
   events = [];
   for (var i = 0; i < PREPOPULATED_EVENTS.length; i++) {
     var event = PREPOPULATED_EVENTS[i];
@@ -119,19 +108,55 @@ function loadData() {
       category: event.category,
       description: event.description,
       timestamp: new Date(event.date).getTime(),
-      upvoteCount: upvotes[event.id] || 0
+      upvoteCount: 0 // Will be loaded from Firebase
     });
   }
   console.log("Loaded " + events.length + " events");
+
+  // Load votes from Firebase
+  loadVotesFromFirebase();
 }
 
-function saveUpvotes() {
-  try {
-    localStorage.setItem("upvotes", JSON.stringify(upvotes));
-  } catch (e) {
-    console.error("Error saving upvotes:", e);
+function loadVotesFromFirebase() {
+  if (!window.db) {
+    console.log("Firebase not ready yet, retrying...");
+    setTimeout(loadVotesFromFirebase, 100);
+    return;
   }
+
+  console.log("Loading votes from Firebase...");
+  var promises = [];
+
+  for (var i = 0; i < events.length; i++) {
+    (function(eventId) {
+      var docRef = window.firestoreDoc(window.db, "votes", eventId);
+      var promise = window.firestoreGetDoc(docRef).then(function(docSnap) {
+        if (docSnap.exists()) {
+          var count = docSnap.data().count || 0;
+          upvotes[eventId] = count;
+
+          // Update the event in the events array
+          for (var j = 0; j < events.length; j++) {
+            if (events[j].id === eventId) {
+              events[j].upvoteCount = count;
+              break;
+            }
+          }
+        }
+      }).catch(function(error) {
+        console.error("Error loading votes for " + eventId + ":", error);
+      });
+      promises.push(promise);
+    })(events[i].id);
+  }
+
+  Promise.all(promises).then(function() {
+    console.log("All votes loaded from Firebase");
+    renderEvents();
+  });
 }
+
+// Removed - now using Firebase instead of localStorage
 
 function setupEventListeners() {
   var filterTabs = document.querySelectorAll(".filter-tab");
@@ -383,6 +408,12 @@ function getUrgencyClass(timeRemaining) {
 }
 
 function toggleUpvote(eventId) {
+  if (!window.db) {
+    console.error("Firebase not ready");
+    return;
+  }
+
+  // Optimistic update - update UI immediately
   if (!upvotes[eventId]) {
     upvotes[eventId] = 0;
   }
@@ -395,8 +426,28 @@ function toggleUpvote(eventId) {
     }
   }
 
-  saveUpvotes();
   updateEventCard(eventId);
+
+  // Save to Firebase
+  var docRef = window.firestoreDoc(window.db, "votes", eventId);
+  window.firestoreSetDoc(docRef, {
+    count: window.firestoreIncrement(1)
+  }, { merge: true }).then(function() {
+    console.log("Vote saved to Firebase for " + eventId);
+    // Reload to get accurate count from server
+    loadVotesFromFirebase();
+  }).catch(function(error) {
+    console.error("Error saving vote:", error);
+    // Revert optimistic update on error
+    upvotes[eventId] -= 1;
+    for (var i = 0; i < events.length; i++) {
+      if (events[i].id === eventId) {
+        events[i].upvoteCount = upvotes[eventId];
+        break;
+      }
+    }
+    updateEventCard(eventId);
+  });
 
   // Don't re-sort immediately - let the card stay in place
   // Grid will re-sort on next filter change or page refresh

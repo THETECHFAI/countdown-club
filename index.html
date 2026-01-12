@@ -26,6 +26,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, doc, getDoc, setDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAA1xnUMn1Pe05YMDpDY3J5ET5mz3y_JoE",
+      authDomain: "countdown-club-a53cc.firebaseapp.com",
+      projectId: "countdown-club-a53cc",
+      storageBucket: "countdown-club-a53cc.firebasestorage.app",
+      messagingSenderId: "882546990554",
+      appId: "1:882546990554:web:e86dd093b5cac85c0074e3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.firestoreDoc = doc;
+    window.firestoreGetDoc = getDoc;
+    window.firestoreSetDoc = setDoc;
+    window.firestoreIncrement = increment;
+  </script>
 </head>
 <body>
   <canvas id="confetti-canvas"></canvas>
