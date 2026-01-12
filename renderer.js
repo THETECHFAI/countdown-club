@@ -398,9 +398,8 @@ function toggleUpvote(eventId) {
   saveUpvotes();
   updateEventCard(eventId);
 
-  if (currentSort === "popular") {
-    renderEvents();
-  }
+  // Don't re-sort immediately - let the card stay in place
+  // Grid will re-sort on next filter change or page refresh
 }
 
 function updateEventCard(eventId) {
