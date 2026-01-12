@@ -62,6 +62,7 @@ var PREPOPULATED_EVENTS = [
 
 var events = [];
 var upvotes = {};
+var myVotes = {}; // Track which events THIS user has voted for
 var currentFilter = "all";
 var currentSort = "popular";
 var updateInterval = null;
@@ -98,6 +99,17 @@ function init() {
 }
 
 function loadData() {
+  // Load user's personal votes from localStorage
+  try {
+    var savedMyVotes = localStorage.getItem("myVotes");
+    if (savedMyVotes) {
+      myVotes = JSON.parse(savedMyVotes);
+    }
+  } catch (e) {
+    console.error("Error loading my votes:", e);
+    myVotes = {};
+  }
+
   events = [];
   for (var i = 0; i < PREPOPULATED_EVENTS.length; i++) {
     var event = PREPOPULATED_EVENTS[i];
@@ -267,7 +279,7 @@ function renderEventCard(event) {
   var timeData = calculateTimeRemaining(event.timestamp, now);
   var isCompleted = timeData.total <= 0;
   var upvoteCount = upvotes[event.id] || 0;
-  var hasUpvoted = upvoteCount > 0;
+  var hasUpvoted = myVotes[event.id] === true; // Check if THIS user voted
 
   var completedClass = isCompleted ? "completed" : "";
   var upvotedClass = hasUpvoted ? "upvoted" : "";
@@ -413,12 +425,30 @@ function toggleUpvote(eventId) {
     return;
   }
 
+  var hasVoted = myVotes[eventId] === true;
+  var incrementValue = hasVoted ? -1 : 1; // If already voted, decrement; else increment
+
   // Optimistic update - update UI immediately
   if (!upvotes[eventId]) {
     upvotes[eventId] = 0;
   }
-  upvotes[eventId] += 1;
+  upvotes[eventId] += incrementValue;
 
+  // Update local vote tracking
+  if (hasVoted) {
+    delete myVotes[eventId]; // Remove vote
+  } else {
+    myVotes[eventId] = true; // Add vote
+  }
+
+  // Save myVotes to localStorage
+  try {
+    localStorage.setItem("myVotes", JSON.stringify(myVotes));
+  } catch (e) {
+    console.error("Error saving my votes:", e);
+  }
+
+  // Update events array
   for (var i = 0; i < events.length; i++) {
     if (events[i].id === eventId) {
       events[i].upvoteCount = upvotes[eventId];
@@ -431,15 +461,21 @@ function toggleUpvote(eventId) {
   // Save to Firebase
   var docRef = window.firestoreDoc(window.db, "votes", eventId);
   window.firestoreSetDoc(docRef, {
-    count: window.firestoreIncrement(1)
+    count: window.firestoreIncrement(incrementValue)
   }, { merge: true }).then(function() {
-    console.log("Vote saved to Firebase for " + eventId);
+    console.log("Vote " + (hasVoted ? "removed" : "added") + " for " + eventId);
     // Reload to get accurate count from server
     loadVotesFromFirebase();
   }).catch(function(error) {
     console.error("Error saving vote:", error);
     // Revert optimistic update on error
-    upvotes[eventId] -= 1;
+    upvotes[eventId] -= incrementValue;
+    if (hasVoted) {
+      myVotes[eventId] = true; // Restore vote
+    } else {
+      delete myVotes[eventId]; // Remove vote
+    }
+    localStorage.setItem("myVotes", JSON.stringify(myVotes));
     for (var i = 0; i < events.length; i++) {
       if (events[i].id === eventId) {
         events[i].upvoteCount = upvotes[eventId];
@@ -460,7 +496,13 @@ function updateEventCard(eventId) {
   var btn = card.querySelector('[data-upvote-id="' + eventId + '"]');
   if (btn) {
     btn.textContent = '↑ ' + (upvotes[eventId] || 0);
-    btn.classList.add("upvoted");
+
+    // Update button style based on whether THIS user voted
+    if (myVotes[eventId] === true) {
+      btn.classList.add("upvoted");
+    } else {
+      btn.classList.remove("upvoted");
+    }
   }
 }
 
